@@ -26,10 +26,17 @@ mkdir: 빈 디렉토리 생성 명령어
 
 5 - 복사 : cp
 복사 명령어, cp 경로_및_복사할_객체 복사할_경로_및_객체명 순으로 입력하여 이동, 위치에 따라 경로를 유동적으로 입력이나 제외가 필요
+디렉토리 이동시 -r 필요
 예) cp cp_file ./num2_dir/cp1_file
 
 6 - 이동/이름변경 : mv 활용
 3번 내용 참조 (./는 생략 가능)
-예 mv move2_file ./num1_dir/move_a_file
+예) mv move2_file ./num1_dir/move_a_file
 
 7 - 삭제: rm
+디렉토리 삭제시 -r 필요
+확인 없는 강제 삭제 -f 필요
+강력한 주의 필요 정말로 다 지워지기 때문에
+예) rm cp_file
+
+
