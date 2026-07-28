@@ -39,4 +39,41 @@ mkdir: 빈 디렉토리 생성 명령어
 강력한 주의 필요 정말로 다 지워지기 때문에
 예) rm cp_file
 
+8 - 파일 내용 확인
+cat : 전체 내용 확인 
+예) cat text_5_line
+line 1
+line 2
+line 3
+line 4
+line 5
 
+less : 스크롤 확인
+예) less text_5_line
+line 1
+line 2
+line 3
+line 4
+line 5
+~
+~
+~
+~
+~
+~
+(END)
+
+head : 상단 부분 확인 | -n 5 윗 부분부터 5줄
+예) head -n 3 text_5_line
+line 1
+line 2
+line 3
+
+tail : 하단 부분 확인 | -n 5 하단부터 5줄 | -f 실시간 추가 내용 조회
+예) tail -n 3 text_5_line
+line 3
+line 4
+line 5
+
+9 - 빈파일 생성 : touch
+4번 내용과 동일
