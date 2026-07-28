@@ -114,9 +114,16 @@ x - 실행(프로그램을 프로세스에 올려서 실행 가능한 권한) �
 필요한 권한만큼 숫자를 더해서 옵션에 입력
 예) 오너 rwx 그외 rx 일때 chmod 755 파일명
 
-변경 모두 rw로 변경
+권한 변경 파일 모두 rw로 변경
 chmod 666 permission_dir/permission_file
 변경 전
 -rw-r--r--  1 yimiro  staff  0 Jul 28 13:13 permission_dir/permission_file
 변경 후
 -rw-rw-rw-  1 yimiro  staff  0 Jul 28 13:13 permission_dir/permission_file
+
+권한 변경 디렉토리 사용자만 rwx 나머지 모두 접근 불가
+chmod 700 permission_dir
+변경 전
+drwxr-xr-x  3 yimiro  staff    96 Jul 28 13:14 permission_dir
+변경 후
+drwx------  3 yimiro  staff    96 Jul 28 13:14 permission_dir
