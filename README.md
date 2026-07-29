@@ -283,3 +283,149 @@ docker stats
 CONTAINER ID   NAME          CPU %     MEM USAGE / LIMIT     MEM %     NET I/O         BLOCK I/O        PIDS
 026c3caefe99   my-postgres   0.60%     19.95MiB / 11.73GiB   0.17%     1.66kB / 126B   349MB / 59.3MB   6
 ```
+
+
+6. 컨테이너 실행 실습
+hello-world 실행 성공을 기록한다.
+ubuntu 컨테이너를 실행하고 내부 진입 후 간단 명령(예: ls, echo) 수행 결과를 기록한다.
+컨테이너 종료/유지(attach/exec 등)의 차이를 스스로 관찰하고 간단히 정리한다.
+
+```
+# hello-world 실행
+docker run hello-world
+
+# 결과물
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (arm64v8)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+```
+
+```
+docker images
+
+# Result
+IMAGE                ID             DISK USAGE   CONTENT SIZE   EXTRA
+hello-world:latest   eb84fdc6f2a3        5.2kB             0B    U   
+postgres:16          eb9fe6b58155        474MB             0B    U   
+```
+
+```
+docker ps -a
+
+# Result
+CONTAINER ID   IMAGE         COMMAND                  CREATED          STATUS                      PORTS     NAMES
+89167479ab90   hello-world   "/hello"                 11 minutes ago   Exited (0) 11 minutes ago             xenodochial_stonebraker
+98b46ddb2178   hello-world   "/hello"                 30 minutes ago   Exited (0) 30 minutes ago             admiring_tharp
+026c3caefe99   postgres:16   "docker-entrypoint.s…"   2 hours ago      Exited (0) 29 minutes ago             my-postgres
+```
+
+
+```
+# ubuntu 컨테이너
+docker run -it ubuntu bash
+
+# Discription
+bash: 리눅스 쉘에 접근
+-i: 키보드 입력을 컨테이너 안의 bash까지 전달하기 위해 사용
+-t: 출력을 현재 터미널로 전달 받기 위해서 사용
+
+# Result
+Unable to find image 'ubuntu:latest' locally
+latest: Pulling from library/ubuntu
+55237ac9880d: Pull complete 
+693710ba2039: Pull complete 
+Digest: sha256:3131b4cc82a783df6c9df078f86e01819a13594b865c2cad47bd1bca2b7063bb
+Status: Downloaded newer image for ubuntu:latest
+root@4f2d03e65179:/# 
+```
+
+```
+# 우분투 간단 명령 사용 및 결과
+# 파일 목록 조회
+ls
+
+# Result
+bin  boot  dev  etc  home  lib  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+
+
+# 파일 생성 및 목록 조회
+echo "test text" > ubuntu_test_file
+ls  
+
+# Result
+bin  boot  dev  etc  home  lib  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  ubuntu_test_file  usr  var
+
+# 내용 조회
+cat ubuntu_test_file 
+
+# Result
+test text
+```
+
+```
+# 컨테이너 유지 종료 차이
+# 도커 백그라운드 실행
+docker run -it -d --name test_u ubuntu bash
+
+# 도커 컨테이너 확인
+docker ps
+
+# Result
+CONTAINER ID   IMAGE     COMMAND   CREATED          STATUS          PORTS     NAMES
+dffe773928e2   ubuntu    "bash"    25 seconds ago   Up 20 seconds             test_u
+
+# exec 접근
+docker exec -it test_u bash
+
+# 간단한 명령어 실행
+ls
+
+# Result
+bin  boot  dev  etc  home  lib  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+
+# 종료 및 상태 확인
+exit, docker ps
+
+# Result
+CONTAINER ID   IMAGE     COMMAND   CREATED         STATUS         PORTS     NAMES
+dffe773928e2   ubuntu    "bash"    5 minutes ago   Up 5 minutes             test_u
+
+# attach로 접근
+docker attach test_u
+
+# 간단한 명령어 실행
+bin  boot  dev  etc  home  lib  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+
+# 종료 및 상태 확인
+exit, docker ps
+
+# Result
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+
+# exec로 접근하면 exit으로 나와도 해당 컨테이너는 백그라운드에서 작동
+# attach로 접근하면 exit으로 나왔을 때 해당 컨테이너는 종료
+
+# 종료된 컨테이너까지 확인
+docker ps -a
+
+# Result
+CONTAINER ID   IMAGE         COMMAND                  CREATED             STATUS                          PORTS     NAMES
+dffe773928e2   ubuntu        "bash"                   11 minutes ago      Exited (0) About a minute ago             test_u
+4f2d03e65179   ubuntu        "bash"                   29 minutes ago      Exited (0) 14 minutes ago                 brave_gauss
+89167479ab90   hello-world   "/hello"                 50 minutes ago      Exited (0) 50 minutes ago                 xenodochial_stonebraker
+98b46ddb2178   hello-world   "/hello"                 About an hour ago   Exited (0) About an hour ago              admiring_tharp
+026c3caefe99   postgres:16   "docker-entrypoint.s…"   2 hours ago         Exited (0) About an hour ago              my-postgres
+```
