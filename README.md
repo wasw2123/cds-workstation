@@ -429,3 +429,101 @@ dffe773928e2   ubuntu        "bash"                   11 minutes ago      Exited
 98b46ddb2178   hello-world   "/hello"                 About an hour ago   Exited (0) About an hour ago              admiring_tharp
 026c3caefe99   postgres:16   "docker-entrypoint.s…"   2 hours ago         Exited (0) About an hour ago              my-postgres
 ```
+
+7. 기존 Dockerfile 기반 커스텀 이미지 제작
+아래 방식 중 하나를 선택하여 기존 Dockerfile/이미지 기반의 커스텀 이미지를 만든다.
+(A) 웹 서버 베이스 이미지 활용(예: NGINX/Apache 등) + 정적 콘텐츠/설정만 교체
+(B) Linux 베이스 이미지(예: ubuntu/alpine 등) + 기본 기능(패키지/사용자/환경변수/헬스체크 등) 추가
+제작 결과는 아래 조건을 만족해야 한다.
+커스텀 이미지 빌드 성공 및 컨테이너 실행 성공
+기술 문서에 다음을 포함한다.
+어떤 “기존 베이스(이미지/예시 Dockerfile)”를 선택했는지
+내가 적용한 커스텀 포인트 각각의 목적(간단 요약)
+빌드/실행 명령 + 핵심 결과(출력/스크린샷)
+
+```
+FROM ubuntu:22.04
+# 기본 베이스 이미지 순수 os와 루트 유저만 존재
+
+RUN apt-get update && \ # 받을 수 있는 패키지 목록 갱신
+    apt-get install -y python3 curl && \ # -y 물음에 yes 체크, python curl 패키지 설치
+    rm -rf /var/lib/apt/lists/* # update를 하면서 생긴 목록 삭제
+
+RUN useradd -m appuser # 유저 생성
+USER appuser # 유저 변경
+# 보안을 위해 유저를 생성하고 변경함으로 루트 계정만이 할 수 있는 기능 제외
+# 시스템파일 삭제, 변경이나 특정 포트 사용 등이 제한된다
+
+ENV APP_PORT=8000 # 환경변수에 포트 추가
+
+WORKDIR /home/appuser # 작업 공간
+RUN echo "<h1>ubuntu base custom image</h1>" > index.html # html문서 생성
+
+HEALTHCHECK --interval=30s --timeout=3s \ # 헬스체크 실행 및 주기 설정
+    CMD curl -f http://localhost:${APP_PORT}/ || exit 1 # 어떤 명령으로 체크할지 입력 -f 에러일 때 실패로 처리 및 호출이 불가할 때 실패 처리
+
+CMD python3 -m http.server ${APP_PORT} # 서버실행: 환경변수에 있는 포트로 서버 동작
+```
+
+```
+# 도커 빌드 명령어
+docker build -t my-ubuntu .
+# 도커, 빌드 명령어, 이름생성 옵션, 이름, 도커파일 경로
+
+# Result
+[+] Building 1.5s (9/9) FINISHED                                                docker:orbstack
+ => [internal] load build definition from Dockerfile                                       0.0s
+ => => transferring dockerfile: 430B                                                       0.0s
+ => [internal] load metadata for docker.io/library/ubuntu:22.04                            1.4s
+ => [internal] load .dockerignore                                                          0.0s
+ => => transferring context: 2B                                                            0.0s
+ => [1/5] FROM docker.io/library/ubuntu:22.04@sha256:0e0a0fc6d18feda9db1590da249ac93e8d5a  0.0s
+ => CACHED [2/5] RUN apt-get update &&     apt-get install -y python3 curl &&     rm -rf   0.0s
+ => CACHED [3/5] RUN useradd -m appuser                                                    0.0s
+ => CACHED [4/5] WORKDIR /home/appuser                                                     0.0s
+ => CACHED [5/5] RUN echo "<h1>ubuntu base custom image</h1>" > index.html                 0.0s
+ => exporting to image                                                                     0.0s
+ => => exporting layers                                                                    0.0s
+ => => writing image sha256:219a3812e6247819a95e6c78a056b2691d15173cd67a018b0a4d31934ade0  0.0s
+ => => naming to docker.io/library/my-ubuntu                                               0.0s
+
+ 1 warning found (use docker --debug to expand):
+ - JSONArgsRecommended: JSON arguments recommended for CMD to prevent unintended behavior related to OS signals (line 18)
+
+View build details: docker-desktop://dashboard/build/orbstack/orbstack/l2sy81ehjnph0xrbjtmr1bi4s
+```
+
+```
+# 생성된 이미지 목록 확인
+docker images
+
+# Result
+IMAGE                ID             DISK USAGE   CONTENT SIZE   EXTRA
+hello-world:latest   eb84fdc6f2a3        5.2kB             0B    U   
+my-ubuntu:latest     219a3812e624        105MB             0B    U   
+postgres:16          eb9fe6b58155        474MB             0B    U   
+ubuntu:latest        9238bf8bb4a4        120MB             0B    U   
+
+```
+
+
+```
+# 실행
+docker run -d -p 8000:8000 my-ubuntu
+```
+![localhost 접속하여 확인](./images/CleanShot%202026-07-30%20at%2008.34.37@2x.png)
+
+
+
+```
+# 헬스체크 확인
+cds_workstation (main) $ docker ps
+CONTAINER ID   IMAGE       COMMAND                  CREATED          STATUS                             PORTS                                         NAMES
+5670228b6eb6   my-ubuntu   "/bin/sh -c 'python3…"   21 seconds ago   Up 20 seconds (health: starting)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp   nifty_galois
+cds_workstation (main) $ docker ps
+CONTAINER ID   IMAGE       COMMAND                  CREATED              STATUS                        PORTS                                         NAMES
+5670228b6eb6   my-ubuntu   "/bin/sh -c 'python3…"   About a minute ago   Up About a minute (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp   nifty_galois
+cds_workstation (main) $ docker ps
+CONTAINER ID   IMAGE       COMMAND                  CREATED          STATUS                    PORTS                                         NAMES
+5670228b6eb6   my-ubuntu   "/bin/sh -c 'python3…"   27 minutes ago   Up 27 minutes (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp   nifty_galois
+```
