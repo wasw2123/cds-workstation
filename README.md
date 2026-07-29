@@ -513,9 +513,13 @@ docker run -d -p 8000:8000 my-ubuntu
 ```
 ![localhost 접속하여 확인](./images/CleanShot%202026-07-30%20at%2008.34.37@2x.png)
 
-
-
 ```
+# curl 실행
+curl http://localhost:8000
+```
+![curl로 실행 확인](./images/CleanShot%202026-07-30%20at%2008.41.52@2x.png)
+
+
 # 헬스체크 확인
 cds_workstation (main) $ docker ps
 CONTAINER ID   IMAGE       COMMAND                  CREATED          STATUS                             PORTS                                         NAMES
