@@ -255,7 +255,10 @@ CONTAINER ID   IMAGE         COMMAND                  CREATED          STATUS   
 
 ```
 # 컨테이너 중지
+docker stop my-postgres
 
+# 결과
+my-postgres
 ```
 
 ```
