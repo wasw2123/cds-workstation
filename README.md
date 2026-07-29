@@ -1,4 +1,4 @@
-2. 터미널 조작 로그 기록
+### 2. 터미널 조작 로그 기록
     다음 작업을 터미널로 수행하고, 명령어 + 출력 결과를 기술 문서에 기록한다.
     현재 위치 확인, 목록 확인(숨김 파일 포함), 이동, 생성, 복사, 이동/이름변경, 삭제, 파일 내용 확인, 빈 파일 생성
 
@@ -135,7 +135,7 @@ touch
 ```
 4번 내용과 동일
 
-3. 권한 실습 및 증거 기록
+### 3. 권한 실습 및 증거 기록
 권한을 확인/변경하는 명령을 수행하고, 변경 전/후 비교를 기술 문서에 남긴다.
 최소 요구: 파일 1개, 디렉토리 1개에 대해 권한 변경 실험을 수행한다.
 
@@ -186,7 +186,7 @@ drwxr-xr-x  3 yimiro  staff    96 Jul 28 13:14 permission_dir
 drwx------  3 yimiro  staff    96 Jul 28 13:14 permission_dir
 
 
-4. Docker 설치 및 기본 점검
+### 4. Docker 설치 및 기본 점검
 Docker 버전 확인 결과를 기록한다. (docker --version)
 Docker 데몬 동작 여부 확인 결과를 기록한다. (docker info 또는 동등 점검)
 
@@ -214,7 +214,7 @@ Client:
   --중간 생략--
 ```
 
-5. Docker 기본 운영 명령 수행
+### 5. Docker 기본 운영 명령 수행
 이미지: 다운로드/목록 확인 (예: docker images)
 컨테이너: 실행/중지/목록 확인 (예: docker ps, docker ps -a)
 운영: 로그 확인 (예: docker logs), 리소스 확인 (예: docker stats)
@@ -285,7 +285,7 @@ CONTAINER ID   NAME          CPU %     MEM USAGE / LIMIT     MEM %     NET I/O  
 ```
 
 
-6. 컨테이너 실행 실습
+### 6. 컨테이너 실행 실습
 hello-world 실행 성공을 기록한다.
 ubuntu 컨테이너를 실행하고 내부 진입 후 간단 명령(예: ls, echo) 수행 결과를 기록한다.
 컨테이너 종료/유지(attach/exec 등)의 차이를 스스로 관찰하고 간단히 정리한다.
@@ -430,7 +430,7 @@ dffe773928e2   ubuntu        "bash"                   11 minutes ago      Exited
 026c3caefe99   postgres:16   "docker-entrypoint.s…"   2 hours ago         Exited (0) About an hour ago              my-postgres
 ```
 
-7. 기존 Dockerfile 기반 커스텀 이미지 제작
+### 7. 기존 Dockerfile 기반 커스텀 이미지 제작
 아래 방식 중 하나를 선택하여 기존 Dockerfile/이미지 기반의 커스텀 이미지를 만든다.
 (A) 웹 서버 베이스 이미지 활용(예: NGINX/Apache 등) + 정적 콘텐츠/설정만 교체
 (B) Linux 베이스 이미지(예: ubuntu/alpine 등) + 기본 기능(패키지/사용자/환경변수/헬스체크 등) 추가
