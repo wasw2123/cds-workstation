@@ -88,7 +88,7 @@ line 4
 line 5
 ```
 
-less : 스크롤 확인
+less : 스크롤을 할 수 있게 확인
 ```
 # 명령어 
 less text_5_line
@@ -532,10 +532,29 @@ CONTAINER ID   IMAGE       COMMAND                  CREATED          STATUS     
 5670228b6eb6   my-ubuntu   "/bin/sh -c 'python3…"   27 minutes ago   Up 27 minutes (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp   nifty_galois
 ```
 
-### Docker 볼륨 영속성 검증
+### Docker 바인드 마운트 & 볼륨 영속성 검증
 Docker 볼륨을 생성하고 컨테이너에 연결한다.
 컨테이너 삭제 전/후로 데이터를 확인하여 데이터가 유지됨을 증명한다.
 기술 문서에 생성/연결/검증 절차(명령+출력)를 포함한다.
+
+```
+# 바인드 테스트용 컨테이너 실행
+docker run -it -d --name bind -v $(pwd)/bind_host:/data my-ubuntu
+
+docker exec -it bind bash # 컨테이너 접근
+
+cat /data/bind_file 
+before
+
+호스트로 이동 후 변경
+echo "after" > bind_host/bind_file
+
+# 컨테이너 재 진입 후 확인
+cat /data/bind_file 
+after
+```
+
+
 
 ```
 # docker 볼륨 생성 및 컨테이너 실행
@@ -544,7 +563,7 @@ docker run -it -d --name my-ubuntu-data -v my-vol:/data my-ubuntu
 ```
 
 ```
-컨테이너 접속 및 데이터 생성, 확인
+# 컨테이너 접속 및 데이터 생성, 확인
 cds_workstation (main) $ docker exec -ti my-ubuntu-data bash
 appuser@dc27757aee1a:~$ ls
 index.html
@@ -566,6 +585,25 @@ appuser@98777e6c244e:/data$ ls
 new_file_1
 appuser@98777e6c244e:/data$ cat new_file_1 
 new file 1
+
+docker volume ls
+DRIVER    VOLUME NAME
+local     1fd46b7710cb81319b2d75c5a5db8c89480ee397093c1cf8bedd3843cef3e0bf
+local     df57ff209d9b7b997090e7081808e66606e54feef04ddb9cf25de54a4c34abd4
+local     my-vol
+
+docker volume inspect my-vol
+[
+    {
+        "CreatedAt": "2026-07-30T09:43:27+09:00",
+        "Driver": "local",
+        "Labels": null,
+        "Mountpoint": "/var/lib/docker/volumes/my-vol/_data",
+        "Name": "my-vol",
+        "Options": null,
+        "Scope": "local"
+    }
+]
 ```
 
 ### Git 설정 및 Github 연동
@@ -590,3 +628,4 @@ core.precomposeunicode=true
 remote.origin.url=git@github.com:wasw2123/cds-workstation.git
 :
 ```
+
