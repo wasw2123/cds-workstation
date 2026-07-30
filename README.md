@@ -519,7 +519,7 @@ curl http://localhost:8000
 ```
 ![curl로 실행 확인](./images/CleanShot%202026-07-30%20at%2008.41.52@2x.png)
 
-
+```
 # 헬스체크 확인
 cds_workstation (main) $ docker ps
 CONTAINER ID   IMAGE       COMMAND                  CREATED          STATUS                             PORTS                                         NAMES
@@ -530,4 +530,63 @@ CONTAINER ID   IMAGE       COMMAND                  CREATED              STATUS 
 cds_workstation (main) $ docker ps
 CONTAINER ID   IMAGE       COMMAND                  CREATED          STATUS                    PORTS                                         NAMES
 5670228b6eb6   my-ubuntu   "/bin/sh -c 'python3…"   27 minutes ago   Up 27 minutes (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp   nifty_galois
+```
+
+### Docker 볼륨 영속성 검증
+Docker 볼륨을 생성하고 컨테이너에 연결한다.
+컨테이너 삭제 전/후로 데이터를 확인하여 데이터가 유지됨을 증명한다.
+기술 문서에 생성/연결/검증 절차(명령+출력)를 포함한다.
+
+```
+# docker 볼륨 생성 및 컨테이너 실행
+docker volume create my-vol
+docker run -it -d --name my-ubuntu-data -v my-vol:/data my-ubuntu
+```
+
+```
+컨테이너 접속 및 데이터 생성, 확인
+cds_workstation (main) $ docker exec -ti my-ubuntu-data bash
+appuser@dc27757aee1a:~$ ls
+index.html
+root@135b13589d1b:/data# ls
+new_file_1
+root@135b13589d1b:/data# cat new_file_1 
+new file 1
+```
+
+컨테이너 삭제
+![컨테이너 삭제](./images/CleanShot%202026-07-30%20at%2010.15.11@2x.png)
+
+컨테이너 재생성 및 데이터 확인 
+```
+cds_workstation (main) $ docker run -it -d --name new-ubuntu -v my-vol:/data my-ubuntu
+98777e6c244e4e2067c993ed2ed8306621148acc2490d77a18e51dbb96dc0c56
+cds_workstation (main) $ docker exec -it new-ubuntu bash    
+appuser@98777e6c244e:/data$ ls
+new_file_1
+appuser@98777e6c244e:/data$ cat new_file_1 
+new file 1
+```
+
+### Git 설정 및 Github 연동
+```
+git config --list
+credential.helper=osxkeychain
+user.name=yimiro
+user.email= #이메일이 입력돼 있었으나 제거함
+core.excludesfile=/Users/yimiro/.gitignore_global
+difftool.sourcetree.cmd=opendiff "$LOCAL" "$REMOTE"
+difftool.sourcetree.path=
+mergetool.sourcetree.cmd=/Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh "$LOCAL""$REMOTE" -ancestor "$BASE" -merge "$MERGED"
+mergetool.sourcetree.trustexitcode=true
+init.defaultbranch=main
+alias.lg=log --oneline --graph --all --decorate
+core.repositoryformatversion=0
+core.filemode=true
+core.bare=false
+core.logallrefupdates=true
+core.ignorecase=true
+core.precomposeunicode=true
+remote.origin.url=git@github.com:wasw2123/cds-workstation.git
+:
 ```
