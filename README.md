@@ -533,13 +533,13 @@ ubuntu:latest        9238bf8bb4a4        120MB             0B    U
 # 실행
 docker run -d -p 8000:8000 my-ubuntu
 ```
-![localhost 접속하여 확인](./images/CleanShot%202026-07-30%20at%2008.34.37@2x.png)
+![localhost 접속하여 확인](https://github.com/user-attachments/assets/e25ba2f3-6ce8-4810-8bfb-ade5c7313e98)
 
 ```
 # curl 실행
 curl http://localhost:8000
 ```
-![curl로 실행 확인](./images/CleanShot%202026-07-30%20at%2008.41.52@2x.png)
+![curl로 실행 확인](https://github.com/user-attachments/assets/538c5bde-4a0c-4c9e-9161-432f311dffb8)
 
 ```
 # 헬스체크 확인
@@ -596,7 +596,7 @@ new file 1
 ```
 
 컨테이너 삭제
-![컨테이너 삭제](./images/CleanShot%202026-07-30%20at%2010.15.11@2x.png)
+![컨테이너 삭제](https://github.com/user-attachments/assets/906ec91e-5af5-4c78-8898-872cb2b7c1f2)
 
 컨테이너 재생성 및 데이터 확인 
 ```
@@ -697,7 +697,7 @@ docker compose up -d --build
  ✔ Container cds_workstation-caddy-1    Started      11.2s
 ```
 
-![도커 실행 환경](./images/CleanShot%202026-07-31%20at%2013.33.04@2x.png)
+![도커 실행 환경](https://github.com/user-attachments/assets/b1a4164c-7fb4-4a94-bc90-31b108a65526)
 
 ```
 # caddy로 접속하여 app(fastapi와 통신)
@@ -775,6 +775,16 @@ docker stats, up 등 터미널을 통해 실시간으로 진행상황이나 로�
 
 
 2. 볼륨 마운트 권한 문제
+#### 문제
+도커파일로 보안을 위해 신규 유저를 생성 후 미션을 위해 호스트에서 생성하였고 신규 컨테이너를 만들어서 볼륨에 접근 후 파일 수정을 하려했으나 권한이 755로 설정돼 있어 수정이 불가하였음
+
+#### 원인
+외부에서 접근하여 파일을 수정할 경우 시스템 다운 등 문제가 발생할 수 있음 이를 막기위한 권한이지만 이번 미션 수행을 제한됨
+
+#### 해결
+수정과 확인을 할 수 있는 쓰기 읽기 권한을 부여하는 방법으로 해결하였음
+
+3. AI네이토를 통한 평가 문제
 #### 문제
 도커파일로 보안을 위해 신규 유저를 생성 후 미션을 위해 호스트에서 생성하였고 신규 컨테이너를 만들어서 볼륨에 접근 후 파일 수정을 하려했으나 권한이 755로 설정돼 있어 수정이 불가하였음
 
