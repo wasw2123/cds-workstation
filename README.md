@@ -1,3 +1,25 @@
+### 1. 제출 저장소 및 기술 문서
+*프로젝트 개요*
+기본 터미널 조작 및 개발 환경을 구축
+
+*실행환경*
+OS : Debian # 리눅스 기반 운영체제 dockerfile에서 python3.13-slim으로 베이스 이미지를 사용하면 설치되는 os
+Shell : 기본값 dash, bash도 사용 가능
+docker version: 29.4.0
+git version: 2.52.0
+
+*수행항목 체크리스트*
+- [x] 터미널 기본 조작 및 폴더 구성
+- [x] 권한 변경 실습
+- [x] Docker 설치/점검
+- [x] hello-world 실행
+- [x] Dockerfile 빌드/실행
+- [x] 포트 매핑 접속(2회)
+- [x] 바인드 마운트 반영
+- [x] 볼륨 영속성
+- [x] Git 설정 + VSCode GitHub 연동
+
+
 ### 2. 터미널 조작 로그 기록
     다음 작업을 터미널로 수행하고, 명령어 + 출력 결과를 기술 문서에 기록한다.
     현재 위치 확인, 목록 확인(숨김 파일 포함), 이동, 생성, 복사, 이동/이름변경, 삭제, 파일 내용 확인, 빈 파일 생성
@@ -443,7 +465,7 @@ dffe773928e2   ubuntu        "bash"                   11 minutes ago      Exited
 
 ```
 FROM ubuntu:22.04
-# 기본 베이스 이미지 순수 os와 루트 유저만 존재
+# 기본 베이스 이미지 우분투는 순수 os와 루트 유저만 존재
 
 RUN apt-get update && \ # 받을 수 있는 패키지 목록 갱신
     apt-get install -y python3 curl && \ # -y 물음에 yes 체크, python curl 패키지 설치
@@ -506,7 +528,7 @@ ubuntu:latest        9238bf8bb4a4        120MB             0B    U
 
 ```
 
-
+포트 접속 확인
 ```
 # 실행
 docker run -d -p 8000:8000 my-ubuntu
@@ -628,4 +650,124 @@ core.precomposeunicode=true
 remote.origin.url=git@github.com:wasw2123/cds-workstation.git
 :
 ```
+
+
+## 보너스
+### docker compose 기초
+*문서화된 실행 설정으로 바뀌는 이유*
+명령어로 실행을 한다면 복잡한 설정을 매번 작성해야하고 한번에 1개씩 따로 생성해야함
+반면 문서화를 한다면 여러개를 한번에 명령어로 실행시킬 수 있고 설정또한 파일에 보관되며
+깃을 통해 히스토리를 관리할 수 있다.
+
+```
+docker compose up -d --build
+
+[+] Building 1.4s (16/16) FINISHED
+ => [internal] load local bake definitions           0.0s
+ => => reading from stdin 538B                       0.0s
+ => [internal] load build definition from Dockerfil  0.0s
+ => => transferring dockerfile: 369B                 0.0s
+ => [internal] load metadata for docker.io/library/  0.7s
+ => [internal] load metadata for ghcr.io/astral-sh/  0.7s
+ => [internal] load .dockerignore                    0.0s
+ => => transferring context: 2B                      0.0s
+ => [stage-0 1/7] FROM docker.io/library/python:3.1  0.0s
+ => [internal] load build context                    0.1s
+ => => transferring context: 195.90kB                0.1s
+ => FROM ghcr.io/astral-sh/uv:0.11@sha256:77280f2f7  0.0s
+ => CACHED [stage-0 2/7] WORKDIR /app                0.0s
+ => CACHED [stage-0 3/7] COPY --from=ghcr.io/astral  0.0s
+ => CACHED [stage-0 4/7] COPY pyproject.toml uv.loc  0.0s
+ => CACHED [stage-0 5/7] RUN uv sync --frozen --no-  0.0s
+ => [stage-0 6/7] COPY . .                           0.2s
+ => [stage-0 7/7] RUN chmod +x entrypoint.sh         0.1s
+ => exporting to image                               0.1s
+ => => exporting layers                              0.1s
+ => => writing image sha256:dc6e719903b5e802827c019  0.0s
+ => => naming to docker.io/library/cds_workstation-  0.0s
+ => resolving provenance for metadata file           0.0s
+[+] up 8/8
+ ✔ Image cds_workstation-app            Built         1.4s
+ ✔ Network cds_workstation_default      Created       0.0s
+ ✔ Volume cds_workstation_postgres_data Created       0.0s
+ ✔ Volume cds_workstation_caddy_data    Created       0.0s
+ ✔ Volume cds_workstation_caddy_config  Created       0.0s
+ ✔ Container cds_workstation-db-1       Healthy       5.6s
+ ✔ Container cds_workstation-app-1      Healthy      11.2s
+ ✔ Container cds_workstation-caddy-1    Started      11.2s
+```
+
+![도커 실행 환경](./images/CleanShot%202026-07-31%20at%2013.33.04@2x.png)
+
+```
+# caddy로 접속하여 app(fastapi와 통신)
+docker compose exec caddy wget -qO- http://app:8000/health
+{"status":"ok"}
+```
+
+# docker compose 명령어
+up: docker compose 내에 설정대로 실행
+-d 백그라운드 실행
+--build 이미지를 새로 빌드한 후 실행
+--force-recreate 강제 재생성
+
+down 컨테이너 삭제
+-v 볼륨까지 삭제 (db 데이터 제거)
+
+logs 로그 확인
+(logs 개체명을 입력할 경우) 개체명에 대한 로그만 확인
+-f 실시간 로그 확인
+--tail 100 최근 100줄의 로그 확인
+
+
+```
+#도커 컴포즈 컨테이너 현황 파악
+docker compose ps
+
+NAME                      IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+cds_workstation-app-1     cds_workstation-app   "./entrypoint.sh"        app       25 minutes ago   Up 25 minutes (healthy)   8000/tcp
+cds_workstation-caddy-1   caddy:2-alpine        "caddy run --config …"   caddy     25 minutes ago   Up 25 minutes             0.0.0.0:80->80/tcp, [::]:80->80/tcp, 0.0.0.0:443->443/tcp, [::]:443->443/tcp, 443/udp, 2019/tcp
+cds_workstation-db-1      postgres:16           "docker-entrypoint.s…"   db        25 minutes ago   Up 25 minutes (healthy)   0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+```
+
+```
+# docker 사용량 체크
+docker stats 
+
+CONTAINER ID   NAME                      CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O        PIDS
+b2d32f39ad0b   cds_workstation-caddy-1   0.00%     13.52MiB / 11.73GiB   0.11%     2.95kB / 2.23kB   517MB / 303kB    13
+3b97c405d984   cds_workstation-app-1     0.18%     75.25MiB / 11.73GiB   0.63%     2.02kB / 1.29kB   167MB / 14.5MB   22
+08be99e0c374   cds_workstation-db-1      0.00%     19.81MiB / 11.73GiB   0.16%     2.05kB / 126B     221MB / 59.7MB   6
+
+```
+
+*상태 확인 루틴*
+docker compose ps 로 서버가 정상동작 중인지 확인
+docker compose logs 로 재시작 혹은 문제가 있었는지 확인
+
+문제있을 경우 우선 해결
+
+docker stats 사용량 체크 후 상황에 따라 대응
+
+*HTTPS와 SSH방식의 차이*
+HTTPS는 푸시할 때 토큰과 비밀번호를 받음
+SSH는 특정 키 파일을 만들고 깃허브에 등록 이후 키를 통해 인증
+
+*변경 확인*
+```
+ ssh -T git@github.com
+ 
+Hi wasw2123! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+### 트러블 슈팅
+
+1.
+#### 문제
+
+
+#### 원인
+
+
+#### 해결 대안
 
