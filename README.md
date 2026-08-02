@@ -631,6 +631,7 @@ docker volume inspect my-vol
 ### Git 설정 및 Github 연동
 ```
 git config --list
+
 credential.helper=osxkeychain
 user.name=yimiro
 user.email= #이메일이 입력돼 있었으나 제거함
@@ -742,16 +743,102 @@ b2d32f39ad0b   cds_workstation-caddy-1   0.00%     13.52MiB / 11.73GiB   0.11%  
 ```
 
 *상태 확인 루틴*
-docker compose ps 로 서버가 정상동작 중인지 확인
-docker compose logs 로 재시작 혹은 문제가 있었는지 확인
 
-문제있을 경우 우선 해결
+1) 빠른 상태 확인 — docker compose ps
+ - 목적: 컨테이너가 Up인지, Health 상태는 어떤지 빠르게 파악
+ - 결과값(현재 프로젝트 예시):
+```
+NAME                      IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+cds_workstation-app-1     cds_workstation-app   "./entrypoint.sh"        app       25 minutes ago   Up 25 minutes (healthy)   8000/tcp
+cds_workstation-caddy-1   caddy:2-alpine        "caddy run --config …"   caddy     25 minutes ago   Up 25 minutes             0.0.0.0:80->80/tcp, [::]:80->80/tcp, 0.0.0.0:443->443/tcp, [::]:443->443/tcp, 443/udp, 2019/tcp
+cds_workstation-db-1      postgres:16           "docker-entrypoint.s…"   db        25 minutes ago   Up 25 minutes (healthy)   0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+```
 
-docker stats 사용량 체크 후 상황에 따라 대응
+2) 원인 추적 — docker compose logs [서비스명] --since 5m
+ - 목적: 재시작·에러·헬스체크 실패 로그 확인
+ - 결과값(로그 예시, 현재 문서에서 확인됨):
+```
+2026-07-28 22:53:59.704 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-07-28 22:53:59.706 UTC [64] LOG:  database system was shut down at 2026-07-28 22:53:59 UTC
+2026-07-28 22:53:59.707 UTC [1] LOG:  database system is ready to accept connections
+```
+ - 추가 헬스 엔드포인트 확인(서비스 레벨):
+```
+docker compose exec caddy wget -qO- http://app:8000/health
+{"status":"ok"}
+```
 
-*HTTPS와 SSH방식의 차이*
-HTTPS는 푸시할 때 토큰과 비밀번호를 받음
-SSH는 특정 키 파일을 만들고 깃허브에 등록 이후 키를 통해 인증
+3) 자원(리소스) 확인 — docker stats --no-stream 또는 docker compose ps와 병행
+ - 목적: CPU/메모리/IO 병목이나 메모리 누수 감지
+ - 결과값(현재 프로젝트 예시):
+```
+CONTAINER ID   NAME                      CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O        PIDS
+b2d32f39ad0b   cds_workstation-caddy-1   0.00%     13.52MiB / 11.73GiB   0.11%     2.95kB / 2.23kB   517MB / 303kB    13
+3b97c405d984   cds_workstation-app-1     0.18%     75.25MiB / 11.73GiB   0.63%     2.02kB / 1.29kB   167MB / 14.5MB   22
+08be99e0c374   cds_workstation-db-1      0.00%     19.81MiB / 11.73GiB   0.16%     2.05kB / 126B     221MB / 59.7MB   6
+```
+
+4) 심층 조사(필요 시)
+ - docker inspect <컨테이너ID>  → 네트워크/마운트/환경변수 확인
+ - docker compose top / docker compose exec <서비스> ps aux → 프로세스 수준 확인
+
+5) 초기 대응 순서(우선순위)
+ - 로그로 원인 파악 → 서비스 재시작: docker compose restart <서비스>
+ - 문제가 재현되면 이미지 재빌드·재배포: docker compose up -d --build <서비스>
+ - 볼륨/마운트/환경 문제라면 설정 수정 후 재시작
+ - 필요하면 이전 안정 버전으로 롤백
+
+권장 주기 및 자동화
+ - 배포 직후(몇 분 간격), 하루/운영 시간 중 정기 점검(예: 30분 간격)
+ - 헬스체크(Healthcheck) 설정과 모니터링/알림(예: Prometheus/Grafana, external health monitors) 연계 권장
+
+배움 포인트(왜 이 순서인가?)
+ - 1) ps: 가장 빠른 가시성(무엇이 Down인지 바로 확인)
+ - 2) logs: 상태 이상이 보이면 바로 원인 로그로 가서 실패 사유를 찾음
+ - 3) stats: 로그에서 자원 이슈 징후가 있거나 간헐적 문제일 경우 자원 사용량을 확인
+ - 이 순서로 확인하면 '무엇이 문제인지'→'왜 발생했는지'→'어떻게 조치할지'로 자연스럽게 이어집니다.
+
+간단 체크리스트(한 줄 요약)
+ - docker compose ps → docker compose logs --since 5m → docker stats --no-stream → 필요 시 inspect/exec → 조치(restart/up -d --build)
+
+*HTTPS와 SSH 방식: 차이 및 권장 사용법*
+
+요약:
+- HTTPS: 사용자명 + 개인 액세스 토큰(PAT)으로 인증합니다. 설정이 간단하지만 토큰 관리가 필요합니다.
+- SSH: 로컬에서 키 쌍을 생성하고 공개키를 GitHub에 등록하여 비밀번호 없이 인증합니다. 한 번 설정하면 편리합니다.
+
+장단점:
+- HTTPS
+  - 장점: 방화벽 환경에서 동작(기본적으로 443 사용), 설정이 단순함, CI에서 토큰 방식 활용 쉬움
+  - 단점: 토큰 노출 위험, 토큰 갱신/관리 필요
+- SSH
+  - 장점: 패스프레이즈 + 개인키로 강력한 인증, 반복 인증이 불필요해 편리
+  - 단점: 키 관리 필요(여러 장치에 등록/삭제), 일부 네트워크에서 포트 차단 가능
+
+SSH 전환/설정 요약(실습 흐름):
+1) 키 생성
+   - ssh-keygen -t ed25519 -C "optional-comment" -f ~/.ssh/id_ed25519
+2) 공개키 등록
+   - cat ~/.ssh/id_ed25519.pub → GitHub Settings → SSH and GPG keys → New SSH key
+3) 로컬 리모트 URL을 SSH로 변경
+   - git remote set-url origin git@github.com:OWNER/REPO.git
+4) 연결 확인
+   - ssh -T git@github.com
+5) 푸시 테스트
+   - git push -u origin main
+
+보안 습관(권장):
+- 개인키(~/.ssh/id_ed25519)는 절대 저장소에 올리지 말 것
+- 키에 패스프레이즈를 설정하고 SSH 에이전트/OS 키체인을 활용해 안전하게 사용
+- 여러 장치에는 각기 다른 키를 발급하고, 더 이상 쓰지 않는 키는 GitHub에서 삭제
+- 토큰이나 비밀번호는 문서(README 등)에 적지 않음
+
+변경 확인(예시 출력):
+```
+ssh -T git@github.com
+
+Hi wasw2123! You've successfully authenticated, but GitHub does not provide shell access.
+```
 
 *변경 확인*
 ```
@@ -794,3 +881,29 @@ git add . 를 사용하여 전체 파일이 깃에 업로드
 #### 해결
 프로젝트 구성할 때 필수로 제외하는 것은 처음부터 .gitignore 파일을 생성하여 추가
 만약 올라갔다면 .env파일 전체 변경 필수
+
+## 디렉터리 구조
+
+다음은 저장소 구조의 간단한 스냅샷입니다. 루트에는 FastAPI 앱과 배포 설정을 유지하고, 미션 관련 자료는 mission/에 모았습니다.
+
+```
+.
+├── main.py               
+├── app/                  
+├── Dockerfile            
+├── docker-compose.yml    
+├── Caddyfile             
+├── entrypoint.sh         
+├── mission/              # 미션 연습 자료 및 산출물
+│   ├── Dockerfile        # Dockerfile 미션
+│   ├── bind_host/        # 바인드 마운트 데모 데이터
+│   ├── num1_dir/         # 미션에 사용된 기타 파일 (mv)
+│   ├── num2_dir/         # 미션에 사용된 기타 파일 (cp)
+│   ├── permission_dir/   # 권한 실습 관련 산출물
+│   └── text_5_line       # CLI 실습에 사용된 예제 파일
+├── README.md
+├── pyproject.toml
+├── .env
+└── .venv/
+```
+
