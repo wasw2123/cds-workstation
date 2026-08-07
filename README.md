@@ -1125,3 +1125,6 @@ git add . 를 사용하여 전체 파일이 깃에 업로드
 | 예시 | `my-ubuntu:latest` | `docker run --name bind my-ubuntu`로 생성된 `bind` 컨테이너 |
 
 이번 실습에서는 `docker build -t my-ubuntu .`로 커스텀 이미지를 만들었고, `docker run -d -p 8000:8000 my-ubuntu`로 해당 이미지를 컨테이너로 실행했다. 즉 이미지는 “무엇을 실행할지에 대한 기준”이고, 컨테이너는 “그 기준을 바탕으로 실제 실행된 결과”다.
+
+
+#### git 동작 확인 테스트를 위한 수정
