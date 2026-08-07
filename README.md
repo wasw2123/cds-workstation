@@ -164,14 +164,19 @@ touch
 
 권한 확인 방법
 *ls -l 개체명*
+```
 ls -l permission_dir/permission_file 
 -rw-r--r--  1 yimiro  staff  0 Jul 28 13:13 permission_dir/permission_file
+```
 
 *stat 개체명*
+```
 stat permission_dir/permission_file 
 16777233 36777845 -rw-r--r-- 1 yimiro staff 0 0 "Jul 28 13:13:57 2026" "Jul 28 13:13:57 2026" "Jul 28 13:14:38 2026" "Jul 28 13:13:57 2026" 4096 0 0 permission_dir/permission_file
+```
 
 *숨김파일 포함해서 전체 보기*
+```
 ls -al
 total 16
 drwxr-xr-x   8 yimiro  staff   256 Jul 28 13:14 .
@@ -182,6 +187,7 @@ drwxr-xr-x   5 yimiro  staff   160 Jul 28 12:17 num1_dir
 drwxr-xr-x   3 yimiro  staff    96 Jul 28 12:06 num2_dir
 drwxr-xr-x   3 yimiro  staff    96 Jul 28 13:14 permission_dir
 -rw-r--r--   1 yimiro  staff    35 Jul 28 12:47 text_5_line
+```
 
 
 권한 변경 명령어 chmod 옵션 파일명
@@ -193,7 +199,7 @@ x - 실행(프로그램을 프로세스에 올려서 실행 가능한 권한) �
 옵션 순서 : 오너, 그룹, 기타
 필요한 권한만큼 숫자를 더해서 옵션에 입력
 예) 오너 rwx 그외 rx 일때 chmod 755 파일명
-
+ 
 권한 변경 파일 모두 rw로 변경
 chmod 666 permission_dir/permission_file
 변경 전
