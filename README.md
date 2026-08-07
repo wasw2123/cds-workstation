@@ -1052,13 +1052,6 @@ ssh -T git@github.com
 Hi wasw2123! You've successfully authenticated, but GitHub does not provide shell access.
 ```
 
-*변경 확인*
-```
- ssh -T git@github.com
- 
-Hi wasw2123! You've successfully authenticated, but GitHub does not provide shell access.
-```
-
 ### 트러블 슈팅
 
 1. 특정 터미널 복귀 조작 명령어
