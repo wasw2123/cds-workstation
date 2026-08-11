@@ -8,6 +8,9 @@ Shell : 기본값 dash, bash도 사용 가능
 docker version: 29.4.0  
 git version: 2.52.0  
 
+OS: MAC OS
+Shell: zsh
+
 *수행항목 체크리스트*
 - [x] 터미널 기본 조작 및 폴더 구성
 - [x] 권한 변경 실습
