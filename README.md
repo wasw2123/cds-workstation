@@ -3,10 +3,13 @@
 기본 터미널 조작 및 개발 환경을 구축
 
 *실행환경*
-OS : Debian # 리눅스 기반 운영체제 dockerfile에서 python3.13-slim으로 베이스 이미지를 사용하면 설치되는 os
-Shell : 기본값 dash, bash도 사용 가능
-docker version: 29.4.0
-git version: 2.52.0
+OS : Debian # 리눅스 기반 운영체제 dockerfile에서 python3.13-slim으로 베이스 이미지를 사용하면 설치되는 os  
+Shell : 기본값 dash, bash도 사용 가능  
+docker version: 29.4.0  
+git version: 2.52.0  
+
+OS: MAC OS
+Shell: zsh
 
 *수행항목 체크리스트*
 - [x] 터미널 기본 조작 및 폴더 구성
